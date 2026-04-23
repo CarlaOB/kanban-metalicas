@@ -207,13 +207,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDdFHZ42InZiEHFALWvDMPx54GOpyeqmt8",
-  authDomain: "kanban-metalicas.firebaseapp.com",
-  databaseURL: "https://kanban-metalicas-default-rtdb.firebaseio.com",
-  projectId: "kanban-metalicas",
-  storageBucket: "kanban-metalicas.firebasestorage.app",
-  messagingSenderId: "403276864583",
-  appId: "1:403276864583:web:33f9e74972a4ef3dce2562"
+  apiKey: "AIzaSyAFa-Z1s0UrAOwu9PMk0W63J61nzOGIf6Q",
+  authDomain: "kanban-metalicas-7389f.firebaseapp.com",
+  databaseURL: "https://kanban-metalicas-7389f-default-rtdb.firebaseio.com",
+  projectId: "kanban-metalicas-7389f",
+  storageBucket: "kanban-metalicas-7389f.firebasestorage.app",
+  messagingSenderId: "1034473892660",
+  appId: "1:1034473892660:web:7722603becaced5ce11361",
+  measurementId: "G-XNM3ES35YZ"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -270,7 +271,7 @@ let isEditMode = false;
 function setSyncStatus(state, text) {
   const dot = document.getElementById('sync-dot');
   const txt = document.getElementById('sync-text');
-  dot.className = 'sync-dot' + (state==='syncing' ? ' syncing' : state==='error' ? ' error' : '');
+  dot.className = 'sync-dot' + (state==='syncing'?' syncing':state==='error'?' error':'');
   txt.textContent = text;
 }
 
@@ -308,10 +309,8 @@ onValue(dbRef, (snapshot) => {
 });
 
 window.toggleEditMode = function() {
-  if (isEditMode) {
-    isEditMode = false;
-    updateModeUI();
-  } else {
+  if (isEditMode) { isEditMode = false; updateModeUI(); }
+  else {
     document.getElementById('pw-overlay').classList.add('open');
     document.getElementById('pw-input').value = '';
     document.getElementById('pw-error').textContent = '';
@@ -333,9 +332,7 @@ window.checkPassword = function() {
   }
 };
 
-window.closePwModal = function() {
-  document.getElementById('pw-overlay').classList.remove('open');
-};
+window.closePwModal = function() { document.getElementById('pw-overlay').classList.remove('open'); };
 
 function updateModeUI() {
   const banner = document.getElementById('mode-banner');
@@ -357,27 +354,27 @@ function updateModeUI() {
 }
 
 function getFiltered() {
-  const q = (document.getElementById('search')?.value || '').toLowerCase();
-  const st = document.getElementById('filter-status')?.value || '';
+  const q = (document.getElementById('search')?.value||'').toLowerCase();
+  const st = document.getElementById('filter-status')?.value||'';
   return cards.filter(c =>
     (!q || c.op.toLowerCase().includes(q) || c.peca.toLowerCase().includes(q) || (c.contrato||'').toLowerCase().includes(q)) &&
-    (!st || c.status === st)
+    (!st || c.status===st)
   );
 }
 
 function checkProgress(card) {
-  const checks = CHECKS_POR_ETAPA[card.etapa] || [];
-  if (!checks.length) return { done:0, total:0, pct:100 };
-  const done = checks.filter((_,i) => card.checks[i]).length;
-  return { done, total: checks.length, pct: Math.round(done/checks.length*100) };
+  const checks = CHECKS_POR_ETAPA[card.etapa]||[];
+  if (!checks.length) return {done:0,total:0,pct:100};
+  const done = checks.filter((_,i)=>card.checks[i]).length;
+  return {done, total:checks.length, pct:Math.round(done/checks.length*100)};
 }
 
 function renderStats() {
   const total = cards.length;
-  const urgente = cards.filter(c => c.status==='urgente').length;
-  const atencao = cards.filter(c => c.status==='atencao').length;
-  const pa = cards.filter(c => c.etapa==='pa').length;
-  const andamento = cards.filter(c => c.etapa!=='op' && c.etapa!=='pa').length;
+  const urgente = cards.filter(c=>c.status==='urgente').length;
+  const atencao = cards.filter(c=>c.status==='atencao').length;
+  const pa = cards.filter(c=>c.etapa==='pa').length;
+  const andamento = cards.filter(c=>c.etapa!=='op'&&c.etapa!=='pa').length;
   document.getElementById('stats-bar').innerHTML = `
     <div class="stat"><div class="stat-num stat-blue">${total}</div><div class="stat-lbl">Total de OPs</div></div>
     <div class="stat"><div class="stat-num stat-orange">${andamento}</div><div class="stat-lbl">Em produção</div></div>
@@ -392,7 +389,7 @@ window.renderAll = function() {
   const board = document.getElementById('board');
   board.innerHTML = '';
   ETAPAS.forEach(etapa => {
-    const etCards = filtered.filter(c => c.etapa===etapa.id);
+    const etCards = filtered.filter(c=>c.etapa===etapa.id);
     const col = document.createElement('div');
     col.className = 'col';
     col.innerHTML = `
@@ -406,7 +403,7 @@ window.renderAll = function() {
     const container = col.querySelector(`#cards-${etapa.id}`);
     etCards.forEach(card => {
       const prog = checkProgress(card);
-      const si = STATUS_INFO[card.status] || STATUS_INFO.ok;
+      const si = STATUS_INFO[card.status]||STATUS_INFO.ok;
       const div = document.createElement('div');
       div.className = `card ${si.cardCls}`;
       div.onclick = () => openCard(card.id);
@@ -423,18 +420,18 @@ window.renderAll = function() {
 };
 
 window.openCard = function(id) {
-  const card = cards.find(c => c.id===id);
+  const card = cards.find(c=>c.id===id);
   editingId = id;
-  const etapa = ETAPAS.find(e => e.id===card.etapa);
-  const checks = CHECKS_POR_ETAPA[card.etapa] || [];
-  const etIdx = ETAPAS.findIndex(e => e.id===card.etapa);
+  const etapa = ETAPAS.find(e=>e.id===card.etapa);
+  const checks = CHECKS_POR_ETAPA[card.etapa]||[];
+  const etIdx = ETAPAS.findIndex(e=>e.id===card.etapa);
   const flowHtml = ETAPAS.map((e,i) => {
     const cls = i<etIdx?'done':i===etIdx?'current':'next';
     return `<span class="flow-dot ${cls}">${e.label}</span>${i<ETAPAS.length-1?'<span class="flow-arrow">›</span>':''}`;
   }).join('');
   const checkHtml = checks.map((txt,i) => {
     const isDone = !!card.checks[i];
-    const clickAttr = isEditMode ? `onclick="toggleCheck(${id},${i})"` : '';
+    const clickAttr = isEditMode?`onclick="toggleCheck(${id},${i})"` :'';
     return `<div class="check-item ${isDone?'done':''} ${isEditMode?'editable':''}" id="chk-${i}" ${clickAttr}>
       <div class="check-box ${isDone?'checked':''}" id="cb-${i}">
         <svg class="check-tick" viewBox="0 0 10 10"><polyline points="2,5 4,8 8,2" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -495,7 +492,7 @@ window.openCard = function(id) {
 
 window.openNew = function(etapaId) {
   if (!isEditMode) return;
-  const etapa = etapaId || 'op';
+  const etapa = etapaId||'op';
   document.getElementById('modal-title').textContent = 'Nova Ordem de Produção';
   document.getElementById('modal-body').innerHTML = `
     <div class="form-row">
@@ -527,7 +524,7 @@ window.openNew = function(etapaId) {
 };
 
 window.saveCard = async function(id) {
-  const card = cards.find(c => c.id===id);
+  const card = cards.find(c=>c.id===id);
   card.op       = document.getElementById('f-op').value;
   card.peca     = document.getElementById('f-peca').value;
   card.qtd      = parseInt(document.getElementById('f-qtd').value)||1;
@@ -567,7 +564,7 @@ window.createCard = async function() {
 
 window.deleteCard = async function(id) {
   if (!confirm('Excluir esta OP?')) return;
-  cards = cards.filter(c => c.id!==id);
+  cards = cards.filter(c=>c.id!==id);
   await saveToFirebase();
   closeModal();
   renderAll();
@@ -576,7 +573,7 @@ window.deleteCard = async function(id) {
 
 window.toggleCheck = async function(cardId, i) {
   if (!isEditMode) return;
-  const card = cards.find(c => c.id===cardId);
+  const card = cards.find(c=>c.id===cardId);
   card.checks[i] = !card.checks[i];
   await saveToFirebase();
   document.getElementById('cb-'+i)?.classList.toggle('checked', !!card.checks[i]);
@@ -584,14 +581,8 @@ window.toggleCheck = async function(cardId, i) {
   renderAll();
 };
 
-window.closeModal = function() {
-  document.getElementById('overlay').classList.remove('open');
-  editingId = null;
-};
-
-window.closeIfOverlay = function(e) {
-  if (e.target===document.getElementById('overlay')) closeModal();
-};
+window.closeModal = function() { document.getElementById('overlay').classList.remove('open'); editingId = null; };
+window.closeIfOverlay = function(e) { if (e.target===document.getElementById('overlay')) closeModal(); };
 
 window.exportCSV = function() {
   const rows = [['OP','Peça','Qtd','Contrato','Prazo','Etapa','Status','Observações']];
