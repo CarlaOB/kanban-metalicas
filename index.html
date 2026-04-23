@@ -5,113 +5,132 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kanban — Quadro de Produção</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; font-size: 13px; }
-.topbar { background: #1F3864; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-.topbar-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.topbar select, .topbar input[type=text] { font-size: 12px; padding: 5px 8px; border-radius: 6px; border: none; background: rgba(255,255,255,0.15); color: white; }
-.topbar select option { color: #1a1a1a; background: white; }
-.topbar input::placeholder { color: rgba(255,255,255,0.6); }
-.btn { padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; }
-.btn-success { background: #1A7A45; color: white; }
-.btn-primary { background: #2E5EAA; color: white; }
-.btn-danger { background: #C0392B; color: white; }
-.btn-outline { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.4); }
-.btn-sm { padding: 4px 10px; font-size: 11px; }
-.sync-badge { font-size: 10px; padding: 3px 10px; border-radius: 10px; background: rgba(255,255,255,0.2); color: white; display: flex; align-items: center; gap: 5px; }
-.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #6ee7b7; display: inline-block; }
-.sync-dot.syncing { background: #fbbf24; animation: pulse 1s infinite; }
-.sync-dot.error { background: #f87171; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-.mode-banner { padding: 6px 20px; font-size: 11px; display: flex; align-items: center; gap: 8px; color: white; }
-.stats-bar { background: white; border-bottom: 1px solid #e0e0e0; padding: 10px 20px; display: flex; gap: 16px; flex-wrap: wrap; }
-.stat { text-align: center; min-width: 80px; }
-.stat-num { font-size: 20px; font-weight: 700; }
-.stat-lbl { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: .04em; }
-/* board scroll */
-.board-outer { width: 100%; overflow-x: auto; overflow-y: visible; padding: 14px 16px 20px; background: #f0f2f5; }
-.board-inner { display: flex; gap: 10px; flex-wrap: nowrap; align-items: flex-start; }
-/* modal */
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; justify-content: center; align-items: flex-start; padding: 30px 16px; overflow-y: auto; }
-.overlay.open { display: flex; }
-.modal { background: white; border-radius: 12px; width: 100%; max-width: 560px; margin: auto; }
-.modal-header { padding: 16px 20px 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-.modal-header h2 { font-size: 15px; font-weight: 600; }
-.modal-close { background: none; border: none; font-size: 22px; color: #888; cursor: pointer; line-height: 1; }
-.modal-body { padding: 16px 20px; }
-.modal-footer { padding: 12px 20px; border-top: 1px solid #eee; display: flex; gap: 8px; justify-content: flex-end; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-.form-row.single { grid-template-columns: 1fr; }
-.form-group { display: flex; flex-direction: column; gap: 4px; }
-.form-group label { font-size: 11px; font-weight: 600; color: #555; text-transform: uppercase; }
-.form-group input, .form-group select, .form-group textarea { border: 1px solid #ccc; border-radius: 6px; padding: 7px 10px; font-size: 13px; font-family: Arial; }
-.section-title { font-size: 11px; font-weight: 600; color: #555; text-transform: uppercase; margin: 14px 0 8px; }
-.flow-strip { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 12px; background: #f7f8fa; border-radius: 8px; }
-.flow-dot { font-size: 10px; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
-.flow-dot.done { background: #e8f8f0; color: #1A7A45; }
-.flow-dot.current { background: #fef0e6; color: #A84300; font-weight: 600; border: 1px solid #E67E22; }
-.flow-dot.next { background: #eee; color: #aaa; }
-.flow-arrow { color: #ccc; font-size: 10px; }
-.assin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.assin-box { border: 1px solid #ddd; border-radius: 6px; padding: 8px 10px; }
-.assin-lbl { font-size: 10px; color: #888; margin-bottom: 4px; }
-.assin-field { border-bottom: 1px solid #ccc; min-height: 22px; font-size: 12px; padding: 2px 0; outline: none; color: #333; }
-.check-item { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 6px; margin-bottom: 4px; background: #f7f8fa; user-select: none; }
-.check-item.editable { cursor: pointer; }
-.check-item.editable:hover { background: #eef1f8; }
-.check-item.done { background: #f0faf5; }
-.check-item.done .check-label { text-decoration: line-through; color: #999; }
-.check-box { width: 16px; height: 16px; border: 2px solid #bbb; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.check-box.checked { background: #1A7A45; border-color: #1A7A45; }
-.check-tick { display: none; width: 10px; height: 10px; }
-.check-box.checked .check-tick { display: block; }
-.check-label { font-size: 12px; color: #333; flex: 1; }
-.pw-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: center; }
-.pw-overlay.open { display: flex; }
-.pw-box { background: white; border-radius: 12px; padding: 28px 32px; width: 100%; max-width: 360px; text-align: center; }
-.pw-box h3 { font-size: 16px; margin-bottom: 6px; color: #1F3864; }
-.pw-box p { font-size: 12px; color: #777; margin-bottom: 18px; }
-.pw-box input { width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px 14px; font-size: 14px; margin-bottom: 12px; text-align: center; letter-spacing: 4px; }
-.pw-error { color: #C0392B; font-size: 11px; margin-bottom: 10px; min-height: 16px; }
-.toast { position: fixed; bottom: 20px; right: 20px; background: #1F3864; color: white; padding: 10px 18px; border-radius: 8px; font-size: 12px; z-index: 999; opacity: 0; transition: opacity .3s; pointer-events: none; }
-.toast.show { opacity: 1; }
-.loading-screen { position: fixed; inset: 0; background: #1F3864; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; color: white; gap: 16px; }
-.loading-screen.hidden { display: none; }
-.loading-spinner { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@media print {
-  .topbar, .stats-bar, .board-outer, .mode-banner { display: none !important; }
-  .overlay { display: flex !important; position: static !important; background: none !important; padding: 0 !important; }
-  .modal-footer { display: none; }
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; font-size: 13px; }
+  h1 { font-size: 15px; font-weight: 600; }
+
+  /* HEADER */
+  .topbar { background: #1F3864; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+  .topbar select, .topbar input[type=text] { font-size: 12px; padding: 5px 8px; border-radius: 6px; border: none; background: rgba(255,255,255,0.15); color: white; }
+  .topbar select option { color: #1a1a1a; background: white; }
+  .topbar input[type=text]::placeholder { color: rgba(255,255,255,0.6); }
+  .btn { padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; }
+  .btn-primary { background: #2E5EAA; color: white; }
+  .btn-primary:hover { background: #1F3864; }
+  .btn-success { background: #1A7A45; color: white; }
+  .btn-success:hover { background: #155f36; }
+  .btn-danger { background: #C0392B; color: white; }
+  .btn-danger:hover { background: #96281b; }
+  .btn-outline { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.4); }
+  .btn-outline:hover { background: rgba(255,255,255,0.1); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+  /* STATS BAR */
+  .stats-bar { background: white; border-bottom: 1px solid #e0e0e0; padding: 10px 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .stat { text-align: center; min-width: 80px; }
+  .stat-num { font-size: 20px; font-weight: 700; }
+  .stat-lbl { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-blue { color: #2E5EAA; }
+  .stat-green { color: #1A7A45; }
+  .stat-orange { color: #A84300; }
+  .stat-red { color: #C0392B; }
+
+  /* BOARD */
+  .board { display: flex; gap: 10px; padding: 14px 16px; overflow-x: auto; align-items: flex-start; min-height: calc(100vh - 160px); }
+  .col { flex: 0 0 170px; background: #e8edf5; border-radius: 10px; padding: 0 0 10px; }
+  .col-header { padding: 10px 12px 8px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; }
+  .col-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .col-count { background: rgba(0,0,0,0.15); color: inherit; font-size: 10px; padding: 1px 7px; border-radius: 8px; font-weight: 600; }
+  .col-cards { padding: 6px 8px 0; min-height: 60px; }
+
+  /* CARD */
+  .card { background: white; border-radius: 8px; border: 1px solid #ddd; padding: 10px; margin-bottom: 7px; cursor: pointer; transition: border-color .15s, transform .1s; position: relative; }
+  .card:hover { border-color: #2E5EAA; transform: translateY(-1px); }
+  .card.urgent { border-left: 3px solid #C0392B; }
+  .card.warning { border-left: 3px solid #E67E22; }
+  .card.info { border-left: 3px solid #2E5EAA; }
+  .card-op { font-size: 10px; color: #888; margin-bottom: 2px; display: flex; justify-content: space-between; }
+  .card-peca { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 3px; line-height: 1.3; }
+  .card-meta { font-size: 11px; color: #555; }
+  .card-tags { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+  .tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+  .tag-ok { background: #e8f8f0; color: #1A7A45; }
+  .tag-atencao { background: #fef0e6; color: #A84300; }
+  .tag-urgente { background: #fdecea; color: #C0392B; }
+  .tag-material { background: #e6f1fb; color: #2E5EAA; }
+  .card-checklist-mini { margin-top: 6px; }
+  .prog-bar { height: 3px; background: #eee; border-radius: 2px; overflow: hidden; margin-top: 3px; }
+  .prog-fill { height: 100%; background: #1A7A45; border-radius: 2px; transition: width .3s; }
+  .prog-text { font-size: 10px; color: #999; margin-top: 2px; }
+
+  .add-card-btn { width: calc(100% - 16px); margin: 2px 8px 0; background: transparent; border: 1.5px dashed #b0b8cc; border-radius: 7px; padding: 7px; font-size: 11px; color: #888; cursor: pointer; text-align: center; }
+  .add-card-btn:hover { background: #dfe5f0; color: #2E5EAA; border-color: #2E5EAA; }
+
+  /* MODAL */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; justify-content: center; align-items: flex-start; padding: 30px 16px; overflow-y: auto; }
+  .overlay.open { display: flex; }
+  .modal { background: white; border-radius: 12px; width: 100%; max-width: 560px; margin: auto; }
+  .modal-header { padding: 16px 20px 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h2 { font-size: 15px; font-weight: 600; }
+  .modal-close { background: none; border: none; font-size: 20px; color: #888; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 16px 20px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #eee; display: flex; gap: 8px; justify-content: flex-end; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .form-row.single { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 11px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: .04em; }
+  .form-group input, .form-group select, .form-group textarea { border: 1px solid #ccc; border-radius: 6px; padding: 7px 10px; font-size: 13px; font-family: Arial, sans-serif; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #2E5EAA; }
+  .etapa-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 12px; }
+  .section-title { font-size: 11px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: .04em; margin: 14px 0 8px; }
+
+  /* CHECKLIST IN MODAL */
+  .check-item { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 6px; margin-bottom: 4px; background: #f7f8fa; cursor: pointer; user-select: none; }
+  .check-item:hover { background: #eef1f8; }
+  .check-item.done { background: #f0faf5; }
+  .check-item.done .check-label { text-decoration: line-through; color: #999; }
+  .check-box { width: 16px; height: 16px; border: 2px solid #bbb; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
+  .check-box.checked { background: #1A7A45; border-color: #1A7A45; }
+  .check-tick { display: none; width: 10px; height: 10px; }
+  .check-box.checked .check-tick { display: block; }
+  .check-label { font-size: 12px; color: #333; flex: 1; }
+  .obs-input { width: 100%; border: none; background: transparent; font-size: 11px; color: #888; font-family: Arial; padding: 0; margin-top: 2px; }
+  .obs-input:focus { outline: none; }
+
+  /* FLOW STRIP */
+  .flow-strip { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 12px; background: #f7f8fa; border-radius: 8px; }
+  .flow-dot { font-size: 10px; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
+  .flow-dot.done { background: #e8f8f0; color: #1A7A45; }
+  .flow-dot.current { background: #fef0e6; color: #A84300; font-weight: 600; border: 1px solid #E67E22; }
+  .flow-dot.next { background: #eee; color: #aaa; }
+  .flow-arrow { color: #ccc; font-size: 10px; }
+
+  /* ASSINATURAS */
+  .assin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .assin-box { border: 1px solid #ddd; border-radius: 6px; padding: 8px 10px; }
+  .assin-lbl { font-size: 10px; color: #888; margin-bottom: 4px; }
+  .assin-field { border-bottom: 1px solid #ccc; min-height: 22px; font-size: 12px; padding: 2px 0; outline: none; color: #333; }
+
+  /* PRINT */
+  @media print {
+    .topbar, .stats-bar, .board { display: none !important; }
+    .overlay { display: flex !important; position: static !important; background: none !important; padding: 0 !important; }
+    .modal { box-shadow: none; border: 1px solid #ccc; }
+    .modal-footer { display: none; }
+    body { background: white; }
+  }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #1F3864; color: white; padding: 10px 18px; border-radius: 8px; font-size: 12px; z-index: 999; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
 </style>
 </head>
 <body>
 
-<div class="loading-screen" id="loading-screen">
-  <div class="loading-spinner"></div>
-  <div style="font-size:13px;opacity:.8">Carregando dados...</div>
-</div>
-
-<div class="pw-overlay" id="pw-overlay">
-  <div class="pw-box">
-    <h3>🔐 Modo Edição</h3>
-    <p>Digite a senha para habilitar a edição do Kanban</p>
-    <input type="password" id="pw-input" placeholder="••••••" onkeydown="if(event.key==='Enter')checkPassword()">
-    <div class="pw-error" id="pw-error"></div>
-    <button class="btn btn-primary" style="width:100%;padding:10px;" onclick="checkPassword()">Entrar</button>
-    <br><br>
-    <button style="width:100%;padding:8px;background:transparent;border:1px solid #ccc;border-radius:6px;cursor:pointer;color:#666;font-size:12px;" onclick="closePwModal()">Continuar como visualizador</button>
-  </div>
-</div>
-
 <div class="topbar">
-  <span style="font-size:15px;font-weight:600;">Quadro Kanban — Produção de Estruturas Metálicas</span>
+  <h1>Quadro Kanban — Produção de Estruturas Metálicas</h1>
   <div class="topbar-right">
-    <div class="sync-badge">
-      <span class="sync-dot" id="sync-dot"></span>
-      <span id="sync-text">Conectando...</span>
-    </div>
     <input type="text" id="search" placeholder="Buscar OP ou peça..." oninput="renderAll()" style="width:160px;">
     <select id="filter-status" onchange="renderAll()">
       <option value="">Todos os status</option>
@@ -120,25 +139,19 @@ body { font-family: Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; font
       <option value="urgente">Atrasado</option>
       <option value="material">Aguard. material</option>
     </select>
-    <button class="btn btn-success" id="btn-nova-op" onclick="openNew()" disabled>+ Nova OP</button>
+    <button class="btn btn-success" onclick="openNew()">+ Nova OP</button>
     <button class="btn btn-outline" onclick="exportCSV()">Exportar CSV</button>
-    <button class="btn btn-outline" id="btn-modo" onclick="toggleEditMode()" style="font-size:11px;">🔒 Editar</button>
+    <button class="btn btn-outline" style="font-size:11px;opacity:.7" onclick="resetData()" title="Apagar todos os dados e voltar aos exemplos">↺ Resetar</button>
   </div>
-</div>
-
-<div id="mode-banner" class="mode-banner" style="background:#2E5EAA;">
-  <span style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.7);display:inline-block;"></span>
-  <span id="mode-text">Modo visualização — você pode ver o quadro mas não editar. Clique em "Editar" para habilitar edições.</span>
 </div>
 
 <div class="stats-bar" id="stats-bar"></div>
 
-<div class="board-outer">
-  <div class="board-inner" id="board"></div>
-</div>
+<div class="board" id="board"></div>
 
+<!-- MODAL CARTÃO -->
 <div class="overlay" id="overlay" onclick="closeIfOverlay(event)">
-  <div class="modal">
+  <div class="modal" id="modal">
     <div class="modal-header">
       <h2 id="modal-title">Nova Ordem de Produção</h2>
       <button class="modal-close" onclick="closeModal()">×</button>
@@ -150,11 +163,18 @@ body { font-family: Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; font
 
 <div class="toast" id="toast"></div>
 
+<!-- Tela de carregamento -->
+<div id="fb-loading" style="position:fixed;inset:0;background:#1F3864;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:white;gap:14px;">
+  <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.2);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;"></div>
+  <div style="font-size:13px;opacity:.8;font-family:Arial;">Carregando dados...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const firebaseConfig = {
+const _app = initializeApp({
   apiKey: "AIzaSyAFa-Z1s0UrAOwu9PMk0W63J61nzOGIf6Q",
   authDomain: "kanban-metalicas-7389f.firebaseapp.com",
   databaseURL: "https://kanban-metalicas-7389f-default-rtdb.firebaseio.com",
@@ -162,26 +182,52 @@ const firebaseConfig = {
   storageBucket: "kanban-metalicas-7389f.firebasestorage.app",
   messagingSenderId: "1034473892660",
   appId: "1:1034473892660:web:7722603becaced5ce11361"
-};
+});
+const _db = getDatabase(_app);
+const _ref = ref(_db, 'kanban');
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const dbRef = ref(db, 'kanban');
+// Substitui localStorage por Firebase
+function saveData() {
+  set(_ref, { cards, nextId }).catch(e => console.error('Erro ao salvar:', e));
+}
 
-const EDIT_PASSWORD = '1234';
+function loadData() {
+  // loadData é chamado na inicialização — aguardamos onValue abaixo
+}
+
+// Escuta mudanças em tempo real
+onValue(_ref, (snapshot) => {
+  const data = snapshot.val();
+  if (data && data.cards) {
+    cards = data.cards;
+    nextId = data.nextId || (Math.max(...data.cards.map(c=>c.id)) + 1);
+  } else {
+    cards = JSON.parse(JSON.stringify(CARDS_DEFAULT));
+    nextId = 9;
+    saveData();
+  }
+  document.getElementById('fb-loading').style.display = 'none';
+  renderAll();
+}, (error) => {
+  console.error('Firebase error:', error);
+  cards = JSON.parse(JSON.stringify(CARDS_DEFAULT));
+  nextId = 9;
+  document.getElementById('fb-loading').style.display = 'none';
+  renderAll();
+});
 
 const ETAPAS = [
-  { id:'op',   label:'OP aberta',   cor:'#4472C4' },
-  { id:'serr', label:'Serralheria', cor:'#2E75B6' },
-  { id:'acab', label:'Acabamento',  cor:'#C55A11' },
-  { id:'pint', label:'Pintura',     cor:'#BF8F00' },
-  { id:'sec',  label:'Secagem',     cor:'#595959' },
-  { id:'led',  label:'LED / Pisca', cor:'#7030A0' },
-  { id:'emb',  label:'Embalagem',   cor:'#375623' },
-  { id:'pa',   label:'Estoque PA',  cor:'#1A7A45' },
+  { id:'op',    label:'OP aberta',   cor:'#4472C4', txt:'white' },
+  { id:'serr',  label:'Serralheria', cor:'#2E75B6', txt:'white' },
+  { id:'acab',  label:'Acabamento',  cor:'#C55A11', txt:'white' },
+  { id:'pint',  label:'Pintura',     cor:'#BF8F00', txt:'white' },
+  { id:'sec',   label:'Secagem',     cor:'#7F7F7F', txt:'white' },
+  { id:'led',   label:'LED / Pisca', cor:'#7030A0', txt:'white' },
+  { id:'emb',   label:'Embalagem',   cor:'#375623', txt:'white' },
+  { id:'pa',    label:'Estoque PA',  cor:'#1A7A45', txt:'white' },
 ];
 
-const CHECKS = {
+const CHECKS_POR_ETAPA = {
   op:   [],
   serr: ['Materiais separados conforme BOM','Corte no comprimento correto','Solda realizada conforme projeto','Estrutura alinhada e esquadrejada','Sem rebarbas cortantes'],
   acab: ['Rebarbas removidas em todas as peças','Solda limpa e uniforme (sem respingos)','Estrutura sem amassados ou deformações','Furos e encaixes conferidos com gabarito','Peças limpas e secas para pintura'],
@@ -192,217 +238,185 @@ const CHECKS = {
   pa:   ['Peças alocadas no endereço correto','Quantidade registrada no estoque','Aguardando agendamento de entrega'],
 };
 
-const STATUS = {
-  ok:       { label:'No prazo',         bg:'#e8f8f0', color:'#1A7A45', cardBorder:'' },
-  atencao:  { label:'Atenção',          bg:'#fef0e6', color:'#A84300', cardBorder:'4px solid #E67E22' },
-  urgente:  { label:'Atrasado',         bg:'#fdecea', color:'#C0392B', cardBorder:'4px solid #C0392B' },
-  material: { label:'Aguard. material', bg:'#e6f1fb', color:'#2E5EAA', cardBorder:'4px solid #2E5EAA' },
+const STATUS_INFO = {
+  ok:       { label:'No prazo',         cls:'tag-ok',       cardCls:'' },
+  atencao:  { label:'Atenção',          cls:'tag-atencao',  cardCls:'warning' },
+  urgente:  { label:'Atrasado',         cls:'tag-urgente',  cardCls:'urgent' },
+  material: { label:'Aguard. material', cls:'tag-material', cardCls:'info' },
 };
 
-const DEFAULT_CARDS = [
-  { id:1, op:'OP-047', peca:'Árvore Natal 3m',  qtd:5, contrato:'Pref. Caratinga', prazo:'20/11/2025', etapa:'serr', status:'ok',      obs:'', checks:{}, assinRecebeu:'', assinLibera:'', dt:'17/04 08:30' },
-  { id:2, op:'OP-048', peca:'Presépio 2m',       qtd:3, contrato:'Pref. Caratinga', prazo:'20/11/2025', etapa:'pint', status:'atencao', obs:'Atenção: prazo em 5 dias', checks:{}, assinRecebeu:'Renato', assinLibera:'', dt:'15/04 07:00' },
-  { id:3, op:'OP-049', peca:'Portal Natal 4m',   qtd:2, contrato:'Pref. Caratinga', prazo:'12/11/2025', etapa:'acab', status:'urgente', obs:'ATRASADO — prioridade máxima', checks:{}, assinRecebeu:'Nelson', assinLibera:'', dt:'16/04 14:00' },
-  { id:4, op:'OP-050', peca:'Árvore Natal 5m',   qtd:2, contrato:'Pref. BH',        prazo:'28/11/2025', etapa:'op',   status:'material',obs:'Aguard. tubo 1.5"', checks:{}, assinRecebeu:'', assinLibera:'', dt:'17/04 09:00' },
-  { id:5, op:'OP-051', peca:'Boneco Papai Noel', qtd:4, contrato:'Pref. BH',        prazo:'22/11/2025', etapa:'sec',  status:'ok',      obs:'', checks:{}, assinRecebeu:'Eduardo', assinLibera:'Eduardo', dt:'14/04 10:00' },
-  { id:6, op:'OP-052', peca:'Árvore Natal 3m',   qtd:3, contrato:'Pref. Ipatinga',  prazo:'30/11/2025', etapa:'led',  status:'ok',      obs:'', checks:{}, assinRecebeu:'Matheus', assinLibera:'Matheus', dt:'13/04 08:00' },
-  { id:7, op:'OP-053', peca:'Decoração de Rua',  qtd:2, contrato:'Pref. Ipatinga',  prazo:'05/12/2025', etapa:'emb',  status:'ok',      obs:'', checks:{}, assinRecebeu:'Cauã', assinLibera:'Cauã', dt:'12/04 07:30' },
-  { id:8, op:'OP-044', peca:'Árvore Natal 3m',   qtd:5, contrato:'Pref. Caratinga', prazo:'01/11/2025', etapa:'pa',   status:'ok',      obs:'Aguardando agendamento', checks:{}, assinRecebeu:'Cauã', assinLibera:'Cauã', dt:'10/04 08:00' },
+const CARDS_DEFAULT = [
+  { id:1, op:'OP-047', peca:'Árvore Natal 3m',    qtd:5, contrato:'Pref. Caratinga', prazo:'20/11/2025', etapa:'serr', status:'ok',       obs:'', checks:{}, assinRecebeu:'', assinLibera:'', dtEntrada:'17/04 08:30' },
+  { id:2, op:'OP-048', peca:'Presépio 2m',         qtd:3, contrato:'Pref. Caratinga', prazo:'20/11/2025', etapa:'pint', status:'atencao',  obs:'Atenção: prazo em 5 dias', checks:{}, assinRecebeu:'Renato', assinLibera:'', dtEntrada:'15/04 07:00' },
+  { id:3, op:'OP-049', peca:'Portal Natal 4m',     qtd:2, contrato:'Pref. Caratinga', prazo:'12/11/2025', etapa:'acab', status:'urgente',  obs:'ATRASADO — prioridade máxima', checks:{}, assinRecebeu:'Nelson', assinLibera:'', dtEntrada:'16/04 14:00' },
+  { id:4, op:'OP-050', peca:'Árvore Natal 5m',     qtd:2, contrato:'Pref. BH',        prazo:'28/11/2025', etapa:'op',   status:'material', obs:'Aguard. tubo 1.5" (em trânsito)', checks:{}, assinRecebeu:'', assinLibera:'', dtEntrada:'17/04 09:00' },
+  { id:5, op:'OP-051', peca:'Boneco Papai Noel',   qtd:4, contrato:'Pref. BH',        prazo:'22/11/2025', etapa:'sec',  status:'ok',       obs:'', checks:{}, assinRecebeu:'Eduardo', assinLibera:'Eduardo', dtEntrada:'14/04 10:00' },
+  { id:6, op:'OP-052', peca:'Árvore Natal 3m',     qtd:3, contrato:'Pref. Ipatinga',  prazo:'30/11/2025', etapa:'led',  status:'ok',       obs:'', checks:{}, assinRecebeu:'Matheus', assinLibera:'Matheus', dtEntrada:'13/04 08:00' },
+  { id:7, op:'OP-053', peca:'Decoração de Rua',    qtd:2, contrato:'Pref. Ipatinga',  prazo:'05/12/2025', etapa:'emb',  status:'ok',       obs:'', checks:{}, assinRecebeu:'Cauã', assinLibera:'Cauã', dtEntrada:'12/04 07:30' },
+  { id:8, op:'OP-044', peca:'Árvore Natal 3m',     qtd:5, contrato:'Pref. Caratinga', prazo:'01/11/2025', etapa:'pa',   status:'ok',       obs:'Aguardando agendamento', checks:{}, assinRecebeu:'Cauã', assinLibera:'Cauã', dtEntrada:'10/04 08:00' },
 ];
 
-let cards = [], nextId = 9, isEditMode = false;
-
-function setSyncStatus(state, text) {
-  document.getElementById('sync-dot').className = 'sync-dot' + (state==='syncing'?' syncing':state==='error'?' error':'');
-  document.getElementById('sync-text').textContent = text;
-}
-
-async function save() {
-  setSyncStatus('syncing','Salvando...');
-  try { await set(dbRef,{cards,nextId}); setSyncStatus('ok','Salvo ✓'); setTimeout(()=>setSyncStatus('ok','Sincronizado'),2000); }
-  catch(e) { setSyncStatus('error','Erro ao salvar'); }
-}
-
-onValue(dbRef, snap => {
-  const d = snap.val();
-  cards = (d&&d.cards) ? d.cards : JSON.parse(JSON.stringify(DEFAULT_CARDS));
-  nextId = (d&&d.nextId) ? d.nextId : 9;
-  if (!d||!d.cards) save();
-  document.getElementById('loading-screen').classList.add('hidden');
-  setSyncStatus('ok','Sincronizado');
-  renderAll();
-}, () => {
-  cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
-  document.getElementById('loading-screen').classList.add('hidden');
-  setSyncStatus('error','Sem conexão');
-  renderAll();
-});
-
-window.toggleEditMode = function() {
-  if (isEditMode) { isEditMode=false; updateUI(); return; }
-  document.getElementById('pw-overlay').classList.add('open');
-  document.getElementById('pw-input').value='';
-  document.getElementById('pw-error').textContent='';
-  setTimeout(()=>document.getElementById('pw-input').focus(),100);
-};
-window.checkPassword = function() {
-  if (document.getElementById('pw-input').value===EDIT_PASSWORD) {
-    isEditMode=true; document.getElementById('pw-overlay').classList.remove('open'); updateUI(); showToast('Modo edição ativado ✓');
-  } else { document.getElementById('pw-error').textContent='Senha incorreta.'; document.getElementById('pw-input').value=''; document.getElementById('pw-input').focus(); }
-};
-window.closePwModal = function() { document.getElementById('pw-overlay').classList.remove('open'); };
-
-function updateUI() {
-  const banner = document.getElementById('mode-banner');
-  if (isEditMode) {
-    banner.style.background='#1A7A45';
-    document.getElementById('mode-text').textContent='✏️ Modo edição ativo — você pode criar, editar e mover OPs.';
-    document.getElementById('btn-modo').textContent='🔓 Sair da edição';
-    document.getElementById('btn-nova-op').disabled=false;
-  } else {
-    banner.style.background='#2E5EAA';
-    document.getElementById('mode-text').textContent='Modo visualização — você pode ver o quadro mas não editar. Clique em "Editar" para habilitar edições.';
-    document.getElementById('btn-modo').textContent='🔒 Editar';
-    document.getElementById('btn-nova-op').disabled=true;
-  }
-  renderAll();
-}
+let cards = [];
+let nextId = 9;
+let editingId = null;
+// loadData e saveData são definidos acima via Firebase
 
 function getFiltered() {
-  const q=(document.getElementById('search')?.value||'').toLowerCase();
-  const st=document.getElementById('filter-status')?.value||'';
-  return cards.filter(c=>(!q||c.op.toLowerCase().includes(q)||c.peca.toLowerCase().includes(q)||(c.contrato||'').toLowerCase().includes(q))&&(!st||c.status===st));
+  const q = document.getElementById('search').value.toLowerCase();
+  const st = document.getElementById('filter-status').value;
+  return cards.filter(c =>
+    (!q || c.op.toLowerCase().includes(q) || c.peca.toLowerCase().includes(q) || c.contrato.toLowerCase().includes(q)) &&
+    (!st || c.status === st)
+  );
 }
 
-function prog(card) {
-  const ch=CHECKS[card.etapa]||[]; if(!ch.length) return null;
-  const done=ch.filter((_,i)=>card.checks[i]).length;
-  return {done,total:ch.length,pct:Math.round(done/ch.length*100)};
+function checkProgress(card) {
+  const checks = CHECKS_POR_ETAPA[card.etapa] || [];
+  if (!checks.length) return { done: 0, total: 0, pct: 100 };
+  const done = checks.filter((_, i) => card.checks[i]).length;
+  return { done, total: checks.length, pct: Math.round(done / checks.length * 100) };
 }
 
-window.renderAll = function() {
-  // stats
-  const t=cards.length, u=cards.filter(c=>c.status==='urgente').length, a=cards.filter(c=>c.status==='atencao').length;
-  const pa=cards.filter(c=>c.etapa==='pa').length, em=cards.filter(c=>c.etapa!=='op'&&c.etapa!=='pa').length;
-  document.getElementById('stats-bar').innerHTML=`
-    <div class="stat"><div class="stat-num" style="color:#2E5EAA">${t}</div><div class="stat-lbl">Total de OPs</div></div>
-    <div class="stat"><div class="stat-num" style="color:#A84300">${em}</div><div class="stat-lbl">Em produção</div></div>
-    <div class="stat"><div class="stat-num" style="color:#C0392B">${u}</div><div class="stat-lbl">Atrasadas</div></div>
-    <div class="stat"><div class="stat-num" style="color:#A84300">${a}</div><div class="stat-lbl">Atenção</div></div>
-    <div class="stat"><div class="stat-num" style="color:#1A7A45">${pa}</div><div class="stat-lbl">Prontas p/ entrega</div></div>`;
+function renderStats() {
+  const total = cards.length;
+  const urgente = cards.filter(c => c.status === 'urgente').length;
+  const atencao = cards.filter(c => c.status === 'atencao').length;
+  const pa = cards.filter(c => c.etapa === 'pa').length;
+  const andamento = cards.filter(c => c.etapa !== 'op' && c.etapa !== 'pa').length;
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat"><div class="stat-num stat-blue">${total}</div><div class="stat-lbl">Total de OPs</div></div>
+    <div class="stat"><div class="stat-num stat-orange">${andamento}</div><div class="stat-lbl">Em produção</div></div>
+    <div class="stat"><div class="stat-num stat-red">${urgente}</div><div class="stat-lbl">Atrasadas</div></div>
+    <div class="stat"><div class="stat-num stat-orange">${atencao}</div><div class="stat-lbl">Atenção</div></div>
+    <div class="stat"><div class="stat-num stat-green">${pa}</div><div class="stat-lbl">Prontas p/ entrega</div></div>`;
+}
 
-  const filtered=getFiltered();
-  const board=document.getElementById('board');
-  board.innerHTML='';
-
-  ETAPAS.forEach(etapa=>{
-    const etCards=filtered.filter(c=>c.etapa===etapa.id);
-
-    // coluna
-    const col=document.createElement('div');
-    col.style.cssText=`width:180px;min-width:180px;flex-shrink:0;background:#e8edf5;border-radius:10px;padding:0 0 10px;`;
-
-    // header
-    const hdr=document.createElement('div');
-    hdr.style.cssText=`padding:10px 12px 8px;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:center;background-color:${etapa.cor};`;
-    hdr.innerHTML=`<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:white;">${etapa.label}</span><span style="background:rgba(0,0,0,0.2);color:white;font-size:10px;padding:1px 7px;border-radius:8px;font-weight:600;">${etCards.length}</span>`;
-    col.appendChild(hdr);
-
-    // cards area
-    const area=document.createElement('div');
-    area.style.cssText='padding:6px 8px 0;min-height:60px;';
-    etCards.forEach(card=>{
-      const s=STATUS[card.status]||STATUS.ok;
-      const p=prog(card);
-      const div=document.createElement('div');
-      div.style.cssText=`background:white;border-radius:8px;border:1px solid #ddd;${s.cardBorder?'border-left:'+s.cardBorder+';':''}padding:10px;margin-bottom:7px;cursor:pointer;`;
-      div.onmouseover=()=>div.style.borderColor='#2E5EAA';
-      div.onmouseout=()=>div.style.borderColor=s.cardBorder?'':'#ddd';
-      div.onclick=()=>openCard(card.id);
-      div.innerHTML=`
-        <div style="font-size:10px;color:#888;margin-bottom:2px;display:flex;justify-content:space-between;"><span>${card.op}</span><span>${card.qtd} pç</span></div>
-        <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:3px;line-height:1.3;">${card.peca}</div>
-        <div style="font-size:11px;color:#555;">${card.contrato||''}</div>
-        <div style="font-size:11px;color:#555;margin-top:2px;">Prazo: ${card.prazo||''}</div>
-        <div style="margin-top:6px;"><span style="font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;background:${s.bg};color:${s.color};">${s.label}</span></div>
-        ${p?`<div style="height:3px;background:#eee;border-radius:2px;overflow:hidden;margin-top:6px;"><div style="height:100%;background:#1A7A45;border-radius:2px;width:${p.pct}%;"></div></div><div style="font-size:10px;color:#999;margin-top:2px;">${p.done}/${p.total} check-list</div>`:''}`;
-      area.appendChild(div);
-    });
-    col.appendChild(area);
-
-    // botão adicionar
-    const btn=document.createElement('button');
-    btn.style.cssText=`width:calc(100% - 16px);margin:6px 8px 0;background:transparent;border:1.5px dashed #b0b8cc;border-radius:7px;padding:7px;font-size:11px;color:#888;cursor:pointer;display:block;`;
-    btn.textContent='+ lote';
-    btn.disabled=!isEditMode;
-    if(!isEditMode) btn.style.opacity='0.4';
-    btn.onclick=()=>openNew(etapa.id);
-    col.appendChild(btn);
-
+function renderAll() {
+  renderStats();
+  const filtered = getFiltered();
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  ETAPAS.forEach(etapa => {
+    const etCards = filtered.filter(c => c.etapa === etapa.id);
+    const col = document.createElement('div');
+    col.className = 'col';
+    col.innerHTML = `
+      <div class="col-header" style="background:${etapa.cor};color:${etapa.txt}">
+        <span class="col-title">${etapa.label}</span>
+        <span class="col-count">${etCards.length}</span>
+      </div>
+      <div class="col-cards" id="cards-${etapa.id}"></div>
+      <button class="add-card-btn" onclick="openNew('${etapa.id}')">+ lote</button>`;
     board.appendChild(col);
+    const container = col.querySelector(`#cards-${etapa.id}`);
+    etCards.forEach(card => {
+      const prog = checkProgress(card);
+      const si = STATUS_INFO[card.status] || STATUS_INFO.ok;
+      const div = document.createElement('div');
+      div.className = `card ${si.cardCls}`;
+      div.onclick = () => openCard(card.id);
+      div.innerHTML = `
+        <div class="card-op"><span>${card.op}</span><span style="color:#aaa">${card.qtd} pç</span></div>
+        <div class="card-peca">${card.peca}</div>
+        <div class="card-meta">${card.contrato}</div>
+        <div class="card-meta" style="margin-top:2px">Prazo: ${card.prazo}</div>
+        <div class="card-tags"><span class="tag ${si.cls}">${si.label}</span></div>
+        ${prog.total > 0 ? `<div class="card-checklist-mini">
+          <div class="prog-bar"><div class="prog-fill" style="width:${prog.pct}%"></div></div>
+          <div class="prog-text">${prog.done}/${prog.total} check-list</div>
+        </div>` : ''}`;
+      container.appendChild(div);
+    });
   });
-};
+}
 
-window.openCard = function(id) {
-  const card=cards.find(c=>c.id===id);
-  const etapa=ETAPAS.find(e=>e.id===card.etapa);
-  const checks=CHECKS[card.etapa]||[];
-  const etIdx=ETAPAS.findIndex(e=>e.id===card.etapa);
-  const flowHtml=ETAPAS.map((e,i)=>{
-    const cls=i<etIdx?'done':i===etIdx?'current':'next';
-    return `<span class="flow-dot ${cls}">${e.label}</span>${i<ETAPAS.length-1?'<span class="flow-arrow">›</span>':''}`;
+function openCard(id) {
+  const card = cards.find(c => c.id === id);
+  editingId = id;
+  const etapa = ETAPAS.find(e => e.id === card.etapa);
+  const checks = CHECKS_POR_ETAPA[card.etapa] || [];
+  const etIdx = ETAPAS.findIndex(e => e.id === card.etapa);
+
+  const flowHtml = ETAPAS.map((e, i) => {
+    const cls = i < etIdx ? 'done' : i === etIdx ? 'current' : 'next';
+    return `<span class="flow-dot ${cls}">${e.label}</span>${i < ETAPAS.length-1 ? '<span class="flow-arrow">›</span>' : ''}`;
   }).join('');
-  const checkHtml=checks.map((txt,i)=>{
-    const isDone=!!card.checks[i];
-    return `<div class="check-item ${isDone?'done':''} ${isEditMode?'editable':''}" id="chk-${i}" ${isEditMode?`onclick="toggleCheck(${id},${i})"`:''}>
-      <div class="check-box ${isDone?'checked':''}" id="cb-${i}">
+
+  const checkHtml = checks.map((txt, i) => {
+    const isDone = !!card.checks[i];
+    return `<div class="check-item ${isDone ? 'done' : ''}" id="chk-${i}" onclick="toggleCheck(${id},${i})">
+      <div class="check-box ${isDone ? 'checked' : ''}" id="cb-${i}">
         <svg class="check-tick" viewBox="0 0 10 10"><polyline points="2,5 4,8 8,2" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div><span class="check-label">${txt}</span></div>`;
+      </div>
+      <span class="check-label">${txt}</span>
+    </div>`;
   }).join('');
-  const ro=isEditMode?'':'readonly disabled';
-  const ce=isEditMode?'true':'false';
-  document.getElementById('modal-title').textContent=`${card.op} — ${card.peca}`;
-  document.getElementById('modal-body').innerHTML=`
-    <span style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:12px;color:white;background-color:${etapa.cor};">${etapa.label}</span>
+
+  document.getElementById('modal-title').textContent = `${card.op} — ${card.peca}`;
+  document.getElementById('modal-body').innerHTML = `
+    <span class="etapa-badge" style="background:${etapa.cor};color:${etapa.txt}">${etapa.label}</span>
     <div class="flow-strip">${flowHtml}</div>
     <div class="form-row">
-      <div class="form-group"><label>Nº OP</label><input id="f-op" value="${card.op}" ${ro}></div>
-      <div class="form-group"><label>Status</label><select id="f-status" ${ro}>${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${card.status===k?'selected':''}>${v.label}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Nº OP</label><input id="f-op" value="${card.op}"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="f-status">
+          ${Object.entries(STATUS_INFO).map(([k,v]) => `<option value="${k}" ${card.status===k?'selected':''}>${v.label}</option>`).join('')}
+        </select>
+      </div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Peça / Produto</label><input id="f-peca" value="${card.peca}" ${ro}></div>
-      <div class="form-group"><label>Quantidade</label><input id="f-qtd" type="number" value="${card.qtd}" ${ro}></div>
+      <div class="form-group"><label>Peça / Produto</label><input id="f-peca" value="${card.peca}"></div>
+      <div class="form-group"><label>Quantidade</label><input id="f-qtd" type="number" value="${card.qtd}"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Contrato / Prefeitura</label><input id="f-contrato" value="${card.contrato||''}" ${ro}></div>
-      <div class="form-group"><label>Prazo de entrega</label><input id="f-prazo" value="${card.prazo||''}" ${ro}></div>
+      <div class="form-group"><label>Contrato / Prefeitura</label><input id="f-contrato" value="${card.contrato}"></div>
+      <div class="form-group"><label>Prazo de entrega</label><input id="f-prazo" value="${card.prazo}"></div>
     </div>
     <div class="form-row single">
-      <div class="form-group"><label>Etapa atual</label><select id="f-etapa" ${ro}>${ETAPAS.map(e=>`<option value="${e.id}" ${card.etapa===e.id?'selected':''}>${e.label}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Etapa atual</label>
+        <select id="f-etapa" onchange="renderAll()">
+          ${ETAPAS.map(e => `<option value="${e.id}" ${card.etapa===e.id?'selected':''}>${e.label}</option>`).join('')}
+        </select>
+      </div>
     </div>
-    ${checks.length?`<div class="section-title">Check-list — ${etapa.label}</div>${checkHtml}`:''}
+    ${checks.length ? `<div class="section-title">Check-list — ${etapa.label}</div>${checkHtml}` : ''}
     <div class="section-title">Assinaturas</div>
     <div class="assin-grid">
-      <div class="assin-box"><div class="assin-lbl">Recebeu (setor anterior)</div><div class="assin-field" contenteditable="${ce}" id="f-assinRecebeu">${card.assinRecebeu||''}</div><div style="font-size:10px;color:#aaa;margin-top:2px">Nome + hora</div></div>
-      <div class="assin-box"><div class="assin-lbl">Liberou (próximo setor)</div><div class="assin-field" contenteditable="${ce}" id="f-assinLibera">${card.assinLibera||''}</div><div style="font-size:10px;color:#aaa;margin-top:2px">Nome + hora</div></div>
+      <div class="assin-box"><div class="assin-lbl">Recebeu (setor anterior)</div>
+        <div class="assin-field" contenteditable="true" id="f-assinRecebeu">${card.assinRecebeu}</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">Nome + hora</div>
+      </div>
+      <div class="assin-box"><div class="assin-lbl">Liberou (próximo setor)</div>
+        <div class="assin-field" contenteditable="true" id="f-assinLibera">${card.assinLibera}</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">Nome + hora</div>
+      </div>
     </div>
     <div class="form-row single" style="margin-top:10px;">
-      <div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical" ${ro}>${card.obs||''}</textarea></div>
+      <div class="form-group"><label>Observações</label>
+        <textarea id="f-obs" rows="2" style="resize:vertical">${card.obs}</textarea>
+      </div>
     </div>`;
-  document.getElementById('modal-footer').innerHTML=isEditMode
-    ?`<button class="btn btn-danger btn-sm" onclick="deleteCard(${id})">Excluir</button><button class="btn btn-sm" style="background:#eee;color:#555;" onclick="window.print()">Imprimir</button><button class="btn btn-primary" onclick="saveCard(${id})">Salvar</button>`
-    :`<button class="btn btn-sm" style="background:#eee;color:#555;" onclick="window.print()">Imprimir</button><button class="btn btn-sm" style="background:#eee;color:#555;" onclick="closeModal()">Fechar</button>`;
-  document.getElementById('overlay').classList.add('open');
-};
 
-window.openNew = function(etapaId) {
-  if (!isEditMode) return;
-  const etapa=etapaId||'op';
-  document.getElementById('modal-title').textContent='Nova Ordem de Produção';
-  document.getElementById('modal-body').innerHTML=`
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn btn-danger btn-sm" onclick="deleteCard(${id})">Excluir</button>
+    <button class="btn btn-outline btn-sm" style="color:#555;border-color:#ccc;" onclick="printCard(${id})">Imprimir</button>
+    <button class="btn btn-primary" onclick="saveCard(${id})">Salvar</button>`;
+
+  document.getElementById('overlay').classList.add('open');
+}
+
+function openNew(etapaId) {
+  editingId = null;
+  const etapa = etapaId || 'op';
+  document.getElementById('modal-title').textContent = 'Nova Ordem de Produção';
+  document.getElementById('modal-body').innerHTML = `
     <div class="form-row">
-      <div class="form-group"><label>Nº OP</label><input id="f-op" value="OP-0${nextId<10?'0'+nextId:nextId}"></div>
-      <div class="form-group"><label>Status</label><select id="f-status">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Nº OP</label><input id="f-op" value="OP-0${nextId < 10 ? '0'+nextId : nextId}" placeholder="OP-001"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="f-status">
+          ${Object.entries(STATUS_INFO).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('')}
+        </select>
+      </div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Peça / Produto</label><input id="f-peca" placeholder="Ex: Árvore de Natal 3m"></div>
@@ -413,63 +427,130 @@ window.openNew = function(etapaId) {
       <div class="form-group"><label>Prazo de entrega</label><input id="f-prazo" placeholder="DD/MM/AAAA"></div>
     </div>
     <div class="form-row single">
-      <div class="form-group"><label>Etapa inicial</label><select id="f-etapa">${ETAPAS.map(e=>`<option value="${e.id}" ${e.id===etapa?'selected':''}>${e.label}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Etapa inicial</label>
+        <select id="f-etapa">
+          ${ETAPAS.map(e => `<option value="${e.id}" ${e.id===etapa?'selected':''}>${e.label}</option>`).join('')}
+        </select>
+      </div>
     </div>
     <div class="form-row single">
-      <div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical"></textarea></div>
+      <div class="form-group"><label>Observações</label>
+        <textarea id="f-obs" rows="2" style="resize:vertical"></textarea>
+      </div>
     </div>`;
-  document.getElementById('modal-footer').innerHTML=`<button class="btn btn-sm" style="background:#eee;color:#555;" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="createCard()">Criar OP</button>`;
+
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn btn-outline btn-sm" style="color:#555;border-color:#ccc;" onclick="closeModal()">Cancelar</button>
+    <button class="btn btn-success" onclick="createCard()">Criar OP</button>`;
+
   document.getElementById('overlay').classList.add('open');
-};
+}
 
-window.saveCard = async function(id) {
-  const card=cards.find(c=>c.id===id);
-  card.op=document.getElementById('f-op').value;
-  card.peca=document.getElementById('f-peca').value;
-  card.qtd=parseInt(document.getElementById('f-qtd').value)||1;
-  card.contrato=document.getElementById('f-contrato').value;
-  card.prazo=document.getElementById('f-prazo').value;
-  card.etapa=document.getElementById('f-etapa').value;
-  card.status=document.getElementById('f-status').value;
-  card.obs=document.getElementById('f-obs').value;
-  card.assinRecebeu=document.getElementById('f-assinRecebeu')?.innerText||'';
-  card.assinLibera=document.getElementById('f-assinLibera')?.innerText||'';
-  await save(); closeModal(); renderAll(); showToast('OP salva!');
-};
-
-window.createCard = async function() {
-  const now=new Date();
-  const dt=now.getDate().toString().padStart(2,'0')+'/'+(now.getMonth()+1).toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  cards.push({id:nextId++,op:document.getElementById('f-op').value,peca:document.getElementById('f-peca').value||'Nova peça',qtd:parseInt(document.getElementById('f-qtd').value)||1,contrato:document.getElementById('f-contrato').value||'',prazo:document.getElementById('f-prazo').value||'',etapa:document.getElementById('f-etapa').value||'op',status:document.getElementById('f-status').value||'ok',obs:document.getElementById('f-obs').value||'',checks:{},assinRecebeu:'',assinLibera:'',dt});
-  await save(); closeModal(); renderAll(); showToast('Nova OP criada');
-};
-
-window.deleteCard = async function(id) {
-  if (!confirm('Excluir esta OP?')) return;
-  cards=cards.filter(c=>c.id!==id); await save(); closeModal(); renderAll(); showToast('OP excluída');
-};
-
-window.toggleCheck = async function(cardId,i) {
-  if (!isEditMode) return;
-  const card=cards.find(c=>c.id===cardId);
-  card.checks[i]=!card.checks[i]; await save();
-  document.getElementById('cb-'+i)?.classList.toggle('checked',!!card.checks[i]);
-  document.getElementById('chk-'+i)?.classList.toggle('done',!!card.checks[i]);
+function saveCard(id) {
+  const card = cards.find(c => c.id === id);
+  card.op       = document.getElementById('f-op').value;
+  card.peca     = document.getElementById('f-peca').value;
+  card.qtd      = parseInt(document.getElementById('f-qtd').value) || 1;
+  card.contrato = document.getElementById('f-contrato').value;
+  card.prazo    = document.getElementById('f-prazo').value;
+  card.etapa    = document.getElementById('f-etapa').value;
+  card.status   = document.getElementById('f-status').value;
+  card.obs      = document.getElementById('f-obs').value;
+  card.assinRecebeu = document.getElementById('f-assinRecebeu')?.innerText || '';
+  card.assinLibera  = document.getElementById('f-assinLibera')?.innerText || '';
+  saveData();
+  closeModal();
   renderAll();
-};
+  showToast('OP salva com sucesso');
+}
 
-window.closeModal=function(){document.getElementById('overlay').classList.remove('open');};
-window.closeIfOverlay=function(e){if(e.target===document.getElementById('overlay'))closeModal();};
+function createCard() {
+  const now = new Date();
+  const dt = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  cards.push({
+    id: nextId++,
+    op:       document.getElementById('f-op').value || `OP-0${nextId}`,
+    peca:     document.getElementById('f-peca').value || 'Nova peça',
+    qtd:      parseInt(document.getElementById('f-qtd').value) || 1,
+    contrato: document.getElementById('f-contrato').value || '',
+    prazo:    document.getElementById('f-prazo').value || '',
+    etapa:    document.getElementById('f-etapa').value || 'op',
+    status:   document.getElementById('f-status').value || 'ok',
+    obs:      document.getElementById('f-obs').value || '',
+    checks: {}, assinRecebeu: '', assinLibera: '', dtEntrada: dt,
+  });
+  saveData();
+  closeModal();
+  renderAll();
+  showToast('Nova OP criada');
+}
 
-window.exportCSV=function(){
-  const rows=[['OP','Peça','Qtd','Contrato','Prazo','Etapa','Status','Observações']];
-  cards.forEach(c=>{const et=ETAPAS.find(e=>e.id===c.etapa)?.label||c.etapa;const st=STATUS[c.status]?.label||c.status;rows.push([c.op,c.peca,c.qtd,c.contrato,c.prazo,et,st,c.obs]);});
-  const csv=rows.map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='kanban.csv';a.click();
+function deleteCard(id) {
+  if (!confirm('Excluir esta OP?')) return;
+  cards = cards.filter(c => c.id !== id);
+  saveData();
+  closeModal();
+  renderAll();
+  showToast('OP excluída');
+}
+
+function toggleCheck(cardId, i) {
+  const card = cards.find(c => c.id === cardId);
+  card.checks[i] = !card.checks[i];
+  saveData();
+  const cb = document.getElementById('cb-' + i);
+  const item = document.getElementById('chk-' + i);
+  if (cb) { cb.classList.toggle('checked', !!card.checks[i]); }
+  if (item) { item.classList.toggle('done', !!card.checks[i]); }
+  renderAll();
+}
+
+function printCard(id) {
+  window.print();
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  editingId = null;
+}
+
+function closeIfOverlay(e) {
+  if (e.target === document.getElementById('overlay')) closeModal();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function exportCSV() {
+  const rows = [['OP','Peça','Qtd','Contrato','Prazo','Etapa','Status','Observações']];
+  cards.forEach(c => {
+    const etapa = ETAPAS.find(e => e.id === c.etapa)?.label || c.etapa;
+    const status = STATUS_INFO[c.status]?.label || c.status;
+    rows.push([c.op, c.peca, c.qtd, c.contrato, c.prazo, etapa, status, c.obs]);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kanban_producao.csv';
+  a.click();
   showToast('CSV exportado');
-};
+}
 
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function resetData() {
+  if (!confirm('Apagar todos os dados e voltar aos exemplos iniciais?')) return;
+  cards = JSON.parse(JSON.stringify(CARDS_DEFAULT));
+  nextId = 9;
+  saveData();
+  renderAll();
+  showToast('Dados resetados');
+}
+
+// renderAll() é chamado automaticamente pelo Firebase onValue
 </script>
 </body>
 </html>
